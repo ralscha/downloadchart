@@ -6,6 +6,23 @@
 	<version>1.0.0</version>
 	<packaging>war</packaging>
 
+	<licenses>
+		<license>
+			<name>Apache 2</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Ralph Schaer</name>
+			<email>ralphschaer@gmail.com</email>
+		</developer>
+	</developers>
+	
+	<inceptionYear>2014</inceptionYear>
+
 	<prerequisites>
 		<maven>3.0.0</maven>
 	</prerequisites>
@@ -58,6 +75,38 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			
+			<plugin>
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<header>${basedir}/src/main/config/header.txt</header>
+					<properties>
+						<owner>Ralph Schaer</owner>
+						<year>${project.inceptionYear}</year>
+						<currentYear>2014</currentYear>
+						<email>ralphschaer@gmail.com</email>
+					</properties>
+					<excludes>
+						<exclude>**/*.js</exclude>
+						<exclude>**/*.html</exclude>
+						<exclude>**/*.md</exclude>
+						<exclude>**/*.xml</exclude>
+						<exclude>**/LICENSE</exclude>
+					</excludes>
+					<strictCheck>true</strictCheck>
+				</configuration>
+				<executions>
+					<execution>
+						<id>check-headers</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>			
 		</plugins>
 	</build>
 

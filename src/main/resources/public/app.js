@@ -20,32 +20,78 @@ Ext.onReady(function() {
 		plugins: 'viewport',
 		layout: 'fit',
 	    title: 'Download Charts Example',
+	    viewModel: {
+	    	
+	    },
 	    
 		dockedItems: [ {
 			xtype: 'toolbar',
 			items: [ {
+				xtype: 'textfield',
+				fieldLabel: 'Filename',
+				labelWidth: 60,
+				width: 150,
+				bind: '{filename}'
+			},
+			{
+				xtype: 'numberfield',
+				fieldLabel: 'Width',
+				labelWidth: 40,
+				width: 100,
+				bind: '{width}'
+			},
+			{
+				xtype: 'numberfield',
+				fieldLabel: 'Height',
+				labelWidth: 40,
+				width: 100,
+				bind: '{height}'
+			},			
+			'-',
+			{
 				text: 'Download as PNG',
 				handler: function(btn) {
 					btn.up('panel').down('cartesian').download();
 				}
+			}, 
+			'-', 
+			{
+				xtype: 'slider',
+				minValue: 0,
+				maxValue: 100,
+				bind: '{quality}',
+				fieldLabel: 'Quality',
+				labelWidth: 50,
+				publishOnComplete: false,
+				width: 200
 			}, {
-				text: 'Download as JPEG (Quality: 0.4)',
+				xtype: 'displayfield',
+				bind: '{quality}',
+				width: 20
+			},			
+			{
+				text: 'Download as JPEG',
 				handler: function(btn) {
-					btn.up('panel').down('cartesian').download({
-						format: 'jpeg',
-						jpeg: {
-							quality: 40
-						}
-					});
+			      var config = {
+				    format: 'jpeg',
+				  };
+			      var vm = btn.up('panel').getViewModel();
+				  
+			      var filename = vm.get('filename');
+			      if (filename) {
+			    	  config.filename = filename;
+			      }
+			      
+			      var quality = vm.get('quality');
+				  if (quality) {
+				    config.jpeg = {
+					  quality: quality
+					}
+				  }
+			      
+				  btn.up('panel').down('cartesian').download(config);
 				}
-			}, {
-				text: 'Download as JPEG (Quality: 1.0)',
-				handler: function(btn) {
-					btn.up('panel').down('cartesian').download({
-						format: 'jpeg'
-					});
-				}
-			}, {
+			}, '-', {
 				text: 'Download as GIF',
 				handler: function(btn) {
 					btn.up('panel').down('cartesian').download({
@@ -53,14 +99,28 @@ Ext.onReady(function() {
 					});
 				}
 			}, {
-				text: 'Download as PDF',
+				text: 'Download as PDF (portrait)',
 				handler: function(btn) {
 					btn.up('panel').down('cartesian').download({
 						format: 'pdf',
 						pdf: {
-                          format: 'A4',
-						  orientation: 'landscape',
-						  border: '1cm'
+							format: 'A4',
+							orientation: 'portrait',
+							border: '1cm'
+						}
+					});
+				}
+			}, {
+				text: 'Download as PDF (landscape)',
+				handler: function(btn) {
+					btn.up('panel').down('cartesian').download({
+						format: 'pdf',
+						/*width: 400,
+						height: 200,*/
+						pdf: {
+							format: 'A4',
+							orientation: 'landscape',
+							border: '5mm'
 						}
 					});
 				}

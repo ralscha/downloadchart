@@ -1,3 +1,18 @@
+/**
+ * Copyright 2014-2014 Ralph Schaer <ralphschaer@gmail.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package ch.rasc.downloadchart;
 
 import java.awt.AlphaComposite;
@@ -5,6 +20,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -29,7 +45,6 @@ import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.graphics.xobject.PDPixelMap;
 
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -86,34 +101,33 @@ public class DownloadChartServlet extends HttpServlet {
 			handlePng(response, imageData, width, height, filename);
 		}
 		else if (format.equals("jpeg")) {
-			JpegOptions options = readOptions(request, "jpeg");
+			JpegOptions options = readOptions(request, "jpeg", JpegOptions.class);
 			handleJpg(response, imageData, width, height, filename, options);
 		}
 		else if (format.equals("gif")) {
 			handleGif(response, imageData, width, height, filename);
 		}
 		else if (format.equals("pdf")) {
-			PdfOptions options = readOptions(request, "pdf");
+			PdfOptions options = readOptions(request, "pdf", PdfOptions.class);
 			handlePdf(response, imageData, width, height, filename, options);
 		}
 
 		response.getOutputStream().flush();
 	}
 
-	private static <T> T readOptions(HttpServletRequest request, String requestParameter)
-			throws IOException, JsonParseException, JsonMappingException {
+	private static <T> T readOptions(HttpServletRequest request, String requestParameter,
+			Class<T> clazz) throws IOException, JsonParseException, JsonMappingException {
+
 		String optionsString = request.getParameter(requestParameter);
-		T options = null;
 		if (optionsString != null) {
-			options = objectMapper.readValue(optionsString, new TypeReference<T>() {
-				// nothing_here
-			});
+			return objectMapper.readValue(optionsString, clazz);
 		}
-		return options;
+		return null;
 	}
 
 	private static void handlePng(HttpServletResponse response, byte[] imageData,
 			Integer width, Integer height, String filename) throws IOException {
+
 		response.setContentType("image/png");
 		response.setHeader("Content-Disposition", "attachment; filename=\"" + filename
 				+ ".png\";");
@@ -124,6 +138,7 @@ public class DownloadChartServlet extends HttpServlet {
 	private static void handleJpg(HttpServletResponse response, byte[] imageData,
 			Integer width, Integer height, String filename, JpegOptions options)
 			throws IOException {
+
 		response.setContentType("image/jpeg");
 		response.setHeader("Content-Disposition", "attachment; filename=\"" + filename
 				+ ".jpg\";");
@@ -161,7 +176,8 @@ public class DownloadChartServlet extends HttpServlet {
 			ImageWriter writer = iter.next();
 			ImageWriteParam iwp = writer.getDefaultWriteParam();
 			iwp.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
-			if (options != null && options.quality != null) {
+			if (options != null && options.quality != null && options.quality != 0
+					&& options.quality != 100) {
 				iwp.setCompressionQuality(options.quality / 100f);
 			}
 			else {
@@ -175,6 +191,7 @@ public class DownloadChartServlet extends HttpServlet {
 
 	private static void handleGif(HttpServletResponse response, byte[] imageData,
 			Integer width, Integer height, String filename) throws IOException {
+
 		response.setContentType("image/gif");
 		response.setHeader("Content-Disposition", "attachment; filename=\"" + filename
 				+ ".gif\";");
@@ -185,6 +202,7 @@ public class DownloadChartServlet extends HttpServlet {
 	private static void handlePdf(HttpServletResponse response, byte[] imageData,
 			Integer width, Integer height, String filename, PdfOptions options)
 			throws IOException {
+
 		response.setContentType("application/pdf");
 		response.setHeader("Content-Disposition", "attachment; filename=\"" + filename
 				+ ".pdf\";");
@@ -208,8 +226,8 @@ public class DownloadChartServlet extends HttpServlet {
 					format = new PDRectangle(279 * MM_TO_UNITS, 432 * MM_TO_UNITS);
 				}
 				else if (options.width != null && options.height != null) {
-					Float pdfWidth = extractValue(options.width);
-					Float pdfHeight = extractValue(options.height);
+					Float pdfWidth = convertToPixel(options.width);
+					Float pdfHeight = convertToPixel(options.height);
 					if (pdfWidth != null && pdfHeight != null) {
 						format = new PDRectangle(pdfWidth, pdfHeight);
 					}
@@ -224,29 +242,65 @@ public class DownloadChartServlet extends HttpServlet {
 
 			document.addPage(page);
 
-			BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageData));
-			// int w = image.getWidth();
-			// int h = image.getHeight();
-			// BufferedImage after = new BufferedImage(w, h,
-			// BufferedImage.TYPE_INT_ARGB);
-			// AffineTransform at = new AffineTransform();
-			// at.scale(0.8, 0.8);
-			// AffineTransformOp scaleOp =
-			// new AffineTransformOp(at, AffineTransformOp.TYPE_BILINEAR);
-			// after = scaleOp.filter(image, after);
+			BufferedImage originalImage = ImageIO
+					.read(new ByteArrayInputStream(imageData));
 
 			try (PDPageContentStream contentStream = new PDPageContentStream(document,
 					page)) {
 
-				System.out.println(page.getMediaBox());
+				PDPixelMap ximage = new PDPixelMap(document, originalImage);
 
-				PDPixelMap ximage = new PDPixelMap(document, image);
-				// contentStream.drawImage(ximage, 10, 0);
+				Dimension newDimension = calculateDimension(originalImage, width, height);
+				int imgWidth = ximage.getWidth();
+				int imgHeight = ximage.getHeight();
+				if (newDimension != null) {
+					imgWidth = newDimension.width;
+					imgHeight = newDimension.height;
+				}
 
-				float scale = 0.7f; // reduce this value if the image is too large
-				contentStream.drawXObject(ximage, 20, page.getMediaBox().getHeight() - 20
-						- ximage.getHeight() * scale, ximage.getWidth() * scale,
-						ximage.getHeight() * scale);
+				Float border = options != null ? convertToPixel(options.border) : null;
+				if (border == null) {
+					border = 0.0f;
+				}
+
+				AffineTransform transform;
+
+				if (page.getRotation() == null) {
+					float scale = (page.getMediaBox().getWidth() - (border * 2))
+							/ imgWidth;
+					if (scale < 1.0) {
+						transform = new AffineTransform(imgWidth, 0, 0, imgHeight,
+								border, (page.getMediaBox().getHeight() - border)
+										- (imgHeight * scale));
+
+						transform.scale(scale, scale);
+					}
+					else {
+						transform = new AffineTransform(imgWidth, 0, 0, imgHeight,
+								border, page.getMediaBox().getHeight() - border
+										- imgHeight);
+					}
+
+				}
+				else {
+					float scale = (page.getMediaBox().getHeight() - (border * 2))
+							/ imgWidth;
+					if (scale < 1.0) {
+						transform = new AffineTransform(imgHeight, 0, 0, imgWidth,
+								(imgHeight * scale) + border, border);
+
+						transform.scale(scale, scale);
+					}
+					else {
+						transform = new AffineTransform(imgHeight, 0, 0, imgWidth,
+								imgHeight + border, border);
+					}
+
+					transform.rotate(1.0 * Math.PI / 2.0);
+				}
+
+				contentStream.drawXObject(ximage, transform);
+
 			}
 
 			try {
@@ -260,28 +314,35 @@ public class DownloadChartServlet extends HttpServlet {
 
 	private static void writeImage(HttpServletResponse response, byte[] imageData,
 			Integer width, Integer height, String formatName) throws IOException {
+
 		BufferedImage originalImage = ImageIO.read(new ByteArrayInputStream(imageData));
 		Dimension newDimension = calculateDimension(originalImage, width, height);
+
 		if (newDimension != null) {
-			int type = originalImage.getType() == 0? BufferedImage.TYPE_INT_ARGB : originalImage.getType();
-			BufferedImage resizedImage = new BufferedImage(newDimension.width, newDimension.height, type);
+			int type = originalImage.getType() == 0 ? BufferedImage.TYPE_INT_ARGB
+					: originalImage.getType();
+			BufferedImage resizedImage = new BufferedImage(newDimension.width,
+					newDimension.height, type);
 			Graphics2D g = resizedImage.createGraphics();
-			g.drawImage(originalImage, 0, 0, newDimension.width, newDimension.height, null);
+			g.drawImage(originalImage, 0, 0, newDimension.width, newDimension.height,
+					null);
 			g.dispose();
 			g.setComposite(AlphaComposite.Src);
 
 			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-			RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+					RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 			g.setRenderingHint(RenderingHints.KEY_RENDERING,
-			RenderingHints.VALUE_RENDER_QUALITY);
+					RenderingHints.VALUE_RENDER_QUALITY);
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-			RenderingHints.VALUE_ANTIALIAS_ON);
+					RenderingHints.VALUE_ANTIALIAS_ON);
 
 			ImageIO.write(resizedImage, formatName, response.getOutputStream());
-		} else {
+		}
+		else {
 			if ("png".equals(formatName)) {
 				response.getOutputStream().write(imageData);
-			} else {
+			}
+			else {
 				ImageIO.write(originalImage, "gif", response.getOutputStream());
 			}
 		}
@@ -307,20 +368,22 @@ public class DownloadChartServlet extends HttpServlet {
 
 	}
 
-	private static Float extractValue(String str) {
-		if (str.endsWith("mm")) {
-			return Float.parseFloat(str.substring(0, str.length() - 2)) * MM_TO_UNITS;
-		}
-		else if (str.endsWith("cm")) {
-			return Float.parseFloat(str.substring(0, str.length() - 2)) * 10
-					* MM_TO_UNITS;
-		}
-		else if (str.endsWith("in")) {
-			return Float.parseFloat(str.substring(0, str.length() - 2))
-					* DEFAULT_USER_SPACE_UNIT_DPI;
-		}
-		else if (str.endsWith("px")) {
-			return Float.parseFloat(str.substring(0, str.length() - 2));
+	private static Float convertToPixel(String str) {
+		if (str != null) {
+			if (str.endsWith("mm")) {
+				return Float.parseFloat(str.substring(0, str.length() - 2)) * MM_TO_UNITS;
+			}
+			else if (str.endsWith("cm")) {
+				return Float.parseFloat(str.substring(0, str.length() - 2)) * 10
+						* MM_TO_UNITS;
+			}
+			else if (str.endsWith("in")) {
+				return Float.parseFloat(str.substring(0, str.length() - 2))
+						* DEFAULT_USER_SPACE_UNIT_DPI;
+			}
+			else if (str.endsWith("px")) {
+				return Float.parseFloat(str.substring(0, str.length() - 2));
+			}
 		}
 
 		return null;

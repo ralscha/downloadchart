@@ -1,3 +1,18 @@
+/**
+ * Copyright 2014-2014 Ralph Schaer <ralphschaer@gmail.com>
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *   http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package ch.rasc.downloadchart;
 
 public class PdfOptions {
@@ -8,21 +23,3 @@ public class PdfOptions {
 	public String format;
 	public String orientation;
 }
-
-/*
- * PDF specific options. This config is only used if config.format is set to 'pdf'. The given object should be in either this format:
-
-{
-  width: '200px',
-  height: '300px',
-  border: '0px'
-}
-or this format:
-
-{
-  format: 'A4',
-  orientation: 'portrait',
-  border: '1cm'
-}
-Supported dimension units are: 'mm', 'cm', 'in', 'px'. No unit means 'px'. Supported formats are: 'A3', 'A4', 'A5', 'Legal', 'Letter', 'Tabloid'. Orientation ('portrait', 'landscape') is optional and defaults to 'portrait'.
-*/
