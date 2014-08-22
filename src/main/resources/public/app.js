@@ -19,9 +19,65 @@ Ext.onReady(function() {
 	new Ext.panel.Panel({
 		plugins: 'viewport',
 		layout: 'fit',
-	    title: 'Download Charts Example',
+	    title: 'Download Chart Example',
 	    viewModel: {
 	    	
+	    },
+	    
+	    downloadChart: function(format) {
+	      var vm = this.getViewModel();
+	      var filename = vm.get('filename');
+	      var quality = vm.get('quality');
+	      var width = vm.get('width');
+	      var height = vm.get('height');
+	      var pdf = Ext.clone(vm.get('pdf'));
+	      var config = Object.create(null);
+	      
+	      if (format !== 'png') {
+	    	  config.format = format;
+	      }			
+	      
+	      if (width) {
+	    	  config.width = width;
+	      }
+	      
+	      if (height) {
+	    	  config.height = height;
+	      }
+	      
+	      if (filename) {
+	    	  config.filename = filename;
+	      }
+	      
+	      if (format === 'jpeg' && quality) {		        
+		      config.jpeg = {
+			    quality: quality
+		  	  }
+	      } else if (format === 'pdf' && pdf) {
+	    	  if (pdf.unit) {
+	    		  if (pdf.border) {
+	    			  pdf.border = pdf.border + pdf.unit;
+	    		  }
+	    		  if (pdf.width) {
+	    			  pdf.width = pdf.width + pdf.unit; 
+	    		  }
+	    		  if (pdf.height) {
+	    			  pdf.height = pdf.height + pdf.unit;
+	    		  }
+	    		  
+	    		  delete pdf.unit;
+	    	  }
+	    	  
+	    	  if (pdf.orientation) {
+	    		  pdf.orientation = pdf.orientation.orientation;
+	    	  }
+
+	    	  config.pdf = pdf;
+	      }
+	      
+	      console.log(config);
+	      
+		  this.down('cartesian').download(config);
 	    },
 	    
 		dockedItems: [ {
@@ -30,28 +86,28 @@ Ext.onReady(function() {
 				xtype: 'textfield',
 				fieldLabel: 'Filename',
 				labelWidth: 60,
-				width: 150,
+				width: 160,
 				bind: '{filename}'
 			},
 			{
 				xtype: 'numberfield',
 				fieldLabel: 'Width',
 				labelWidth: 40,
-				width: 100,
+				width: 110,
 				bind: '{width}'
 			},
 			{
 				xtype: 'numberfield',
 				fieldLabel: 'Height',
 				labelWidth: 40,
-				width: 100,
+				width: 110,
 				bind: '{height}'
 			},			
 			'-',
 			{
 				text: 'Download as PNG',
 				handler: function(btn) {
-					btn.up('panel').down('cartesian').download();
+					btn.up('panel').downloadChart('png');
 				}
 			}, 
 			'-', 
@@ -63,7 +119,8 @@ Ext.onReady(function() {
 				fieldLabel: 'Quality',
 				labelWidth: 50,
 				publishOnComplete: false,
-				width: 200
+				width: 200,
+				value: 100
 			}, {
 				xtype: 'displayfield',
 				bind: '{quality}',
@@ -72,65 +129,79 @@ Ext.onReady(function() {
 			{
 				text: 'Download as JPEG',
 				handler: function(btn) {
-			      var config = {
-				    format: 'jpeg',
-				  };
-			      var vm = btn.up('panel').getViewModel();
-				  
-			      var filename = vm.get('filename');
-			      if (filename) {
-			    	  config.filename = filename;
-			      }
-			      
-			      var quality = vm.get('quality');
-				  if (quality) {
-				    config.jpeg = {
-					  quality: quality
-					}
-				  }
-			      
-				  btn.up('panel').down('cartesian').download(config);
+			      btn.up('panel').downloadChart('jpeg');
 				}
 			}, '-', {
 				text: 'Download as GIF',
 				handler: function(btn) {
-					btn.up('panel').down('cartesian').download({
-						format: 'gif'
-					});
-				}
-			}, {
-				text: 'Download as PDF (portrait)',
-				handler: function(btn) {
-					btn.up('panel').down('cartesian').download({
-						format: 'pdf',
-						pdf: {
-							format: 'A4',
-							orientation: 'portrait',
-							border: '1cm'
-						}
-					});
-				}
-			}, {
-				text: 'Download as PDF (landscape)',
-				handler: function(btn) {
-					btn.up('panel').down('cartesian').download({
-						format: 'pdf',
-						/*width: 400,
-						height: 200,*/
-						pdf: {
-							format: 'A4',
-							orientation: 'landscape',
-							border: '5mm'
-						}
-					});
+					btn.up('panel').downloadChart('gif');
 				}
 			} ]
-		} ],
+		}, {
+			
+			xtype: 'toolbar',
+			items: [ 
+				{				
+					xtype: 'radiogroup',
+			        fieldLabel: 'Orientation',
+			        columns: 2,
+			        labelWidth: 60,
+			        vertical: false,
+			        width: 230,
+			        items: [
+			            { boxLabel: 'Portrait', name: 'orientation', inputValue: 'portrait'},
+			            { boxLabel: 'Landscape', name: 'orientation', inputValue: 'landscape'}
+			        ],
+			        bind: {
+			        	value: '{pdf.orientation}'
+			        }
+				},'-', {
+					xtype: 'combobox',
+					fieldLabel: 'Format',
+					labelWidth: 50,
+				    store: ['A3', 'A4', 'A5', 'Legal', 'Letter', 'Tabloid'],				    
+				    width: 150,
+				    queryMode: 'local',
+				    bind: '{pdf.format}'
+				},'-', {
+					xtype: 'numberfield',
+					fieldLabel: 'Width',
+					labelWidth: 40,
+					width: 100,
+					bind: '{pdf.width}'
+				}, {
+					xtype: 'numberfield',
+					fieldLabel: 'Height',
+					labelWidth: 40,
+					width: 100,
+					bind: '{pdf.height}'
+				}, {
+					xtype: 'numberfield',
+					fieldLabel: 'Border',
+					labelWidth: 40,
+					width: 100,
+					bind: '{pdf.border}'
+				}, {
+					xtype: 'combobox',
+					fieldLabel: 'Unit',
+					labelWidth: 30,
+				    store: ['px', 'mm', 'cm', 'in'],				    
+				    width: 100,
+				    queryMode: 'local',
+				    bind: '{pdf.unit}'
+				},'-', {
+					text: 'Download as PDF',
+					handler: function(btn) {
+						btn.up('panel').downloadChart('pdf');						
+					}
+				}				
+			]
+			
+		}],
 	    
 	    items: [{
             xtype: 'cartesian',
-            theme: 'category2',
-            
+            margin: '30 0 0 0',
             defaultDownloadServerUrl: 'downloadchart',
             
             width: '100%',
@@ -146,14 +217,14 @@ Ext.onReady(function() {
                 fontSize: 22,
                 width: 100,
                 height: 30,
-                x: 40, // the sprite x position
-                y: 20  // the sprite y position
+                x: 40,
+                y: 20
             }, {
                 type: 'text',
                 text: 'Data: Restaurant Complaints',
                 font: '10px Helvetica',
                 x: 12,
-                y: 480
+                y: 650
             }],
             axes: [{
                 type: 'numeric',
@@ -162,7 +233,8 @@ Ext.onReady(function() {
                 majorTickSteps: 10,
                 reconcileRange: true,
                 grid: true,
-                minimum: 0
+                minimum: 0,
+                maximum: 1800
             }, {
                 type: 'category',
                 position: 'bottom',

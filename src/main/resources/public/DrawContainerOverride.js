@@ -2,8 +2,8 @@ Ext.define('DrawContainerOverride', {
 	override: 'Ext.draw.Container',
 
 	download: function(config) {
-		var me = this, inputs = [], markup, name, value;
-
+		var me = this, inputs = [], name, value, form
+		
 		config = Ext.apply({
 			version: 2,
 			data: me.getImage().data
@@ -25,25 +25,14 @@ Ext.define('DrawContainerOverride', {
 			}
 		}
 
-		markup = Ext.dom.Helper.markup({
-			tag: 'html',
-			children: [ {
-				tag: 'head'
-			}, {
-				tag: 'body',
-				children: [ {
-					tag: 'form',
-					method: 'POST',
-					action: config.url || me.defaultDownloadServerUrl,
-					children: inputs
-				}, {
-					tag: 'script',
-					type: 'text/javascript',
-					children: 'document.getElementsByTagName("form")[0].submit();'
-				} ]
-			} ]
+		form = Ext.dom.Helper.append(Ext.getBody(), {
+			id: 'chartDownloadForm',
+			tag: 'form',
+			method: 'POST',
+			action: config.url || me.defaultDownloadServerUrl,
+			children: inputs
 		});
-
-		window.open('', 'ImageDownload_' + Date.now()).document.write(markup);
+		form.submit();
+		Ext.fly('chartDownloadForm').destroy();
 	}
 });
