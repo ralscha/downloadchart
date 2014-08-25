@@ -11,26 +11,7 @@ RUN \
   apt-get install -y oracle-java8-installer &&\
   apt-get clean
 
-
-
-RUN apt-get -y install git
-
-
-RUN mkdir /build
-RUN wget -P /build/ http://mirrors.gigenet.com/apache/maven/maven-3/3.2.3/binaries/apache-maven-3.2.3-bin.tar.gz
-RUN tar xzf /build/apache-maven-3.2.3-bin.tar.gz -C build
-
-RUN cd build && git clone https://github.com/ralscha/downloadchart.git
-RUN cd /build/downloadchart && /build/apache-maven-3.2.3/bin/mvn package
-
-RUN cp /build/downloadchart/target/downloadchart-1.0.0.war /
-RUN rm -rf /build
-RUN rm -rf /root/.m2
-
-RUN apt-get purge -y git
-RUN apt-get clean autoclean && apt-get -y autoremove
-RUN rm -rf /var/lib/{apt,dpkg,cache,log}/ /tmp/* /var/tmp/*
-
-CMD java -jar downloadchart-1.0.0.war
+RUN wget --no-check-certificate https://github.com/ralscha/downloadchart/releases/download/1.0.0/downloadchart-1.0.0.war
+CMD ["/usr/bin/java", "-jar", "/downloadchart-1.0.0.war"]
 
 EXPOSE 8080
