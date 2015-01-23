@@ -266,12 +266,11 @@ public class DownloadChartServlet extends HttpServlet {
 				AffineTransform transform;
 
 				if (page.getRotation() == null) {
-					float scale = (page.getMediaBox().getWidth() - (border * 2))
-							/ imgWidth;
+					float scale = (page.getMediaBox().getWidth() - border * 2) / imgWidth;
 					if (scale < 1.0) {
 						transform = new AffineTransform(imgWidth, 0, 0, imgHeight,
-								border, (page.getMediaBox().getHeight() - border)
-										- (imgHeight * scale));
+								border, page.getMediaBox().getHeight() - border
+										- imgHeight * scale);
 
 						transform.scale(scale, scale);
 					}
@@ -283,11 +282,11 @@ public class DownloadChartServlet extends HttpServlet {
 
 				}
 				else {
-					float scale = (page.getMediaBox().getHeight() - (border * 2))
+					float scale = (page.getMediaBox().getHeight() - border * 2)
 							/ imgWidth;
 					if (scale < 1.0) {
 						transform = new AffineTransform(imgHeight, 0, 0, imgWidth,
-								(imgHeight * scale) + border, border);
+								imgHeight * scale + border, border);
 
 						transform.scale(scale, scale);
 					}
