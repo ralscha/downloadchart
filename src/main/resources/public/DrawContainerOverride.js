@@ -3,7 +3,7 @@ Ext.define('DrawContainerOverride', {
 
 	download: function(config) {
 		var me = this, inputs = [], name, value, form
-		
+
 		config = Ext.apply({
 			version: 2,
 			data: me.getImage().data
