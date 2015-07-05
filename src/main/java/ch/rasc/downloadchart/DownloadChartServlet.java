@@ -66,8 +66,8 @@ public class DownloadChartServlet extends HttpServlet {
 
 		String dataUrl = request.getParameter("data");
 		int contentStartIndex = dataUrl.indexOf(encodingPrefix) + encodingPrefix.length();
-		byte[] imageData = Base64.getDecoder().decode(
-				dataUrl.substring(contentStartIndex));
+		byte[] imageData = Base64.getDecoder()
+				.decode(dataUrl.substring(contentStartIndex));
 
 		String format = request.getParameter("format");
 		if (format == null) {
@@ -129,19 +129,19 @@ public class DownloadChartServlet extends HttpServlet {
 			Integer width, Integer height, String filename) throws IOException {
 
 		response.setContentType("image/png");
-		response.setHeader("Content-Disposition", "attachment; filename=\"" + filename
-				+ ".png\";");
+		response.setHeader("Content-Disposition",
+				"attachment; filename=\"" + filename + ".png\";");
 
 		writeImage(response, imageData, width, height, "png");
 	}
 
 	private static void handleJpg(HttpServletResponse response, byte[] imageData,
 			Integer width, Integer height, String filename, JpegOptions options)
-			throws IOException {
+					throws IOException {
 
 		response.setContentType("image/jpeg");
-		response.setHeader("Content-Disposition", "attachment; filename=\"" + filename
-				+ ".jpg\";");
+		response.setHeader("Content-Disposition",
+				"attachment; filename=\"" + filename + ".jpg\";");
 
 		BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageData));
 
@@ -170,8 +170,8 @@ public class DownloadChartServlet extends HttpServlet {
 					RenderingHints.VALUE_ANTIALIAS_ON);
 		}
 
-		try (ImageOutputStream ios = ImageIO.createImageOutputStream(response
-				.getOutputStream())) {
+		try (ImageOutputStream ios = ImageIO
+				.createImageOutputStream(response.getOutputStream())) {
 			Iterator<ImageWriter> iter = ImageIO.getImageWritersByFormatName("jpg");
 			ImageWriter writer = iter.next();
 			ImageWriteParam iwp = writer.getDefaultWriteParam();
@@ -193,19 +193,19 @@ public class DownloadChartServlet extends HttpServlet {
 			Integer width, Integer height, String filename) throws IOException {
 
 		response.setContentType("image/gif");
-		response.setHeader("Content-Disposition", "attachment; filename=\"" + filename
-				+ ".gif\";");
+		response.setHeader("Content-Disposition",
+				"attachment; filename=\"" + filename + ".gif\";");
 
 		writeImage(response, imageData, width, height, "gif");
 	}
 
 	private static void handlePdf(HttpServletResponse response, byte[] imageData,
 			Integer width, Integer height, String filename, PdfOptions options)
-			throws IOException {
+					throws IOException {
 
 		response.setContentType("application/pdf");
-		response.setHeader("Content-Disposition", "attachment; filename=\"" + filename
-				+ ".pdf\";");
+		response.setHeader("Content-Disposition",
+				"attachment; filename=\"" + filename + ".pdf\";");
 
 		try (PDDocument document = new PDDocument()) {
 			PDRectangle format = PDPage.PAGE_SIZE_A4;
@@ -268,16 +268,15 @@ public class DownloadChartServlet extends HttpServlet {
 				if (page.getRotation() == null) {
 					float scale = (page.getMediaBox().getWidth() - border * 2) / imgWidth;
 					if (scale < 1.0) {
-						transform = new AffineTransform(imgWidth, 0, 0, imgHeight,
-								border, page.getMediaBox().getHeight() - border
+						transform = new AffineTransform(imgWidth, 0, 0, imgHeight, border,
+								page.getMediaBox().getHeight() - border
 										- imgHeight * scale);
 
 						transform.scale(scale, scale);
 					}
 					else {
-						transform = new AffineTransform(imgWidth, 0, 0, imgHeight,
-								border, page.getMediaBox().getHeight() - border
-										- imgHeight);
+						transform = new AffineTransform(imgWidth, 0, 0, imgHeight, border,
+								page.getMediaBox().getHeight() - border - imgHeight);
 					}
 
 				}
