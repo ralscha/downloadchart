@@ -11,7 +11,7 @@ RUN \
   apt-get install -y oracle-java8-installer &&\
   apt-get clean
 
-RUN wget --no-check-certificate https://github.com/ralscha/downloadchart/releases/download/1.0.0/downloadchart-1.0.0.war
-CMD ["/usr/bin/java", "-jar", "/downloadchart-1.0.0.war"]
+RUN wget --no-check-certificate https://github.com/ralscha/downloadchart/releases/download/1.0.1/downloadchart-1.0.1.war
+CMD ["/usr/bin/java", "-jar", "/downloadchart-1.0.1.war"]
 
 EXPOSE 8080

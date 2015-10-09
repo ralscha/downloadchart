@@ -17,13 +17,13 @@ RUN apt-get -y install git
 
 
 RUN mkdir /build
-RUN wget -P /build/ http://mirrors.gigenet.com/apache/maven/maven-3/3.2.5/binaries/apache-maven-3.2.5-bin.tar.gz
-RUN tar xzf /build/apache-maven-3.2.5-bin.tar.gz -C build
+RUN wget -P /build/ http://mirrors.gigenet.com/apache/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
+RUN tar xzf /build/apache-maven-3.3.3-bin.tar.gz -C build
 
 RUN cd build && git clone https://github.com/ralscha/downloadchart.git
-RUN cd /build/downloadchart && /build/apache-maven-3.2.5/bin/mvn package
+RUN cd /build/downloadchart && /build/apache-maven-3.3.3/bin/mvn package
 
-RUN cp /build/downloadchart/target/downloadchart-1.0.0.war /
+RUN cp /build/downloadchart/target/downloadchart-1.0.1.war /
 RUN rm -rf /build
 RUN rm -rf /root/.m2
 
@@ -31,6 +31,6 @@ RUN apt-get purge -y git
 RUN apt-get clean autoclean && apt-get -y autoremove
 RUN rm -rf /var/lib/{apt,dpkg,cache,log}/ /tmp/* /var/tmp/*
 
-CMD ["/usr/bin/java", "-jar", "/downloadchart-1.0.0.war"]
+CMD ["/usr/bin/java", "-jar", "/downloadchart-1.0.1.war"]
 
 EXPOSE 8080
