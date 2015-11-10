@@ -92,6 +92,8 @@
 						<exclude>**/*.md</exclude>
 						<exclude>**/*.xml</exclude>
 						<exclude>**/LICENSE</exclude>
+						<exclude>.mvn/**/*</exclude>
+						<exclude>mvnw.cmd</exclude>						
 					</excludes>
 					<strictCheck>true</strictCheck>
 				</configuration>
