@@ -4,7 +4,7 @@
 	<groupId>ch.rasc</groupId>
 	<artifactId>downloadchart</artifactId>
 	<version>1.0.1</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 
 	<licenses>
 		<license>
@@ -20,7 +20,7 @@
 			<email>ralphschaer@gmail.com</email>
 		</developer>
 	</developers>
-	
+
 	<inceptionYear>2014</inceptionYear>
 
 	<prerequisites>
@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.3.1.RELEASE</version>
+		<version>1.3.3.RELEASE</version>
 	</parent>
 
 	<properties>
@@ -55,7 +55,7 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>1.8.10</version>
+			<version>1.8.11</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>commons-logging</artifactId>
@@ -67,13 +67,36 @@
 	</dependencies>
 
 
-	<build>		 
+	<build>
+		<finalName>downloadchart</finalName>
 		<plugins>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-			
+
+			<plugin>
+				<groupId>com.spotify</groupId>
+				<artifactId>docker-maven-plugin</artifactId>
+				<version>0.4.1</version>
+				<configuration>
+					<imageName>downloadchart</imageName>
+					<baseImage>develar/java</baseImage>
+					<entryPoint>["java","-Dlogging.file=app.log", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/${project.build.finalName}.jar"]</entryPoint>			
+					<!-- copy the service's jar file from target into the root directory 
+						of the image -->
+					<resources>
+						<resource>
+							<targetPath>/</targetPath>
+							<directory>${project.build.directory}</directory>
+							<include>${project.build.finalName}.jar</include>
+						</resource>
+					</resources>
+					<workdir>/app</workdir>
+					<volumes>/app</volumes>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<groupId>com.mycila</groupId>
 				<artifactId>license-maven-plugin</artifactId>
@@ -93,7 +116,7 @@
 						<exclude>**/*.xml</exclude>
 						<exclude>**/LICENSE</exclude>
 						<exclude>.mvn/**/*</exclude>
-						<exclude>mvnw.cmd</exclude>						
+						<exclude>mvnw.cmd</exclude>
 					</excludes>
 					<strictCheck>true</strictCheck>
 				</configuration>
@@ -106,7 +129,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>			
+			</plugin>
 		</plugins>
 	</build>
 
@@ -118,7 +141,7 @@
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
-		</repository>		
+		</repository>
 	</repositories>
 
 	<pluginRepositories>
@@ -132,6 +155,6 @@
 		</pluginRepository>
 	</pluginRepositories>
 
-		
-	
+
+
 </project>
