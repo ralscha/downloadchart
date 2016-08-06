@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.3.6.RELEASE</version>
+		<version>1.4.0.RELEASE</version>
 	</parent>
 
 	<properties>
@@ -78,7 +78,7 @@
 			<plugin>
 				<groupId>com.spotify</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
-				<version>0.4.5</version>
+				<version>0.4.11</version>
 				<configuration>
 					<imageName>downloadchart</imageName>
 					<baseImage>develar/java</baseImage>
@@ -100,7 +100,7 @@
 			<plugin>
 				<groupId>com.mycila</groupId>
 				<artifactId>license-maven-plugin</artifactId>
-				<version>2.11</version>
+				<version>3.0.rc1</version>
 				<configuration>
 					<header>${basedir}/src/main/config/header.txt</header>
 					<properties>
