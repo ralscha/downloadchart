@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>ch.rasc</groupId>
 	<artifactId>downloadchart</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 	<packaging>jar</packaging>
 
 	<licenses>
@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.4.0.RELEASE</version>
+		<version>1.4.2.RELEASE</version>
 	</parent>
 
 	<properties>
@@ -78,7 +78,7 @@
 			<plugin>
 				<groupId>com.spotify</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
-				<version>0.4.11</version>
+				<version>0.4.13</version>
 				<configuration>
 					<imageName>downloadchart</imageName>
 					<baseImage>develar/java</baseImage>
@@ -100,7 +100,7 @@
 			<plugin>
 				<groupId>com.mycila</groupId>
 				<artifactId>license-maven-plugin</artifactId>
-				<version>3.0.rc1</version>
+				<version>3.0</version>
 				<configuration>
 					<header>${basedir}/src/main/config/header.txt</header>
 					<properties>
