@@ -137,7 +137,7 @@ public class DownloadChartServlet extends HttpServlet {
 
 	private static void handleJpg(HttpServletResponse response, byte[] imageData,
 			Integer width, Integer height, String filename, JpegOptions options)
-					throws IOException {
+			throws IOException {
 
 		response.setContentType("image/jpeg");
 		response.setHeader("Content-Disposition",
@@ -201,7 +201,7 @@ public class DownloadChartServlet extends HttpServlet {
 
 	private static void handlePdf(HttpServletResponse response, byte[] imageData,
 			Integer width, Integer height, String filename, PdfOptions options)
-					throws IOException {
+			throws IOException {
 
 		response.setContentType("application/pdf");
 		response.setHeader("Content-Disposition",
