@@ -50,213 +50,128 @@ Ext.onReady(function() {
 		} ]
 	});
 
-	new Ext.panel.Panel({
-		plugins: 'viewport',
+	new Ext.Container({
+		renderTo: Ext.getBody(),
+		fullscreen: true,
 		layout: 'fit',
 		title: 'Download Chart Example',
 		viewModel: {
 
 		},
 
-		downloadChart: function(format) {
-			var vm = this.getViewModel();
-			var filename = vm.get('filename');
-			var quality = vm.get('quality');
-			var width = vm.get('width');
-			var height = vm.get('height');
-			var pdf = Ext.clone(vm.get('pdf'));
-			var config = Object.create(null);
+		controller: {
+			downloadPng: function() {
+				this.downloadChart('png');
+			},
 
-			if (format !== 'png') {
-				config.format = format;
-			}
+			downloadPdf: function() {
+				this.downloadChart('pdf');
+			},
+			
+			donwloadJpeg: function() {
+				this.downloadChart('jpeg');
+			},
+			
+			downloadGif: function() {
+				this.downloadChart('gif');
+			},
+			
+			onAxisLabelRender: function(axis, label, layoutContext) {
+				var total = axis.getRange()[1];
 
-			if (width) {
-				config.width = width;
-			}
+				return (label / total * 100).toFixed(0) + '%';
+			},
 
-			if (height) {
-				config.height = height;
-			}
+			onBarSeriesTooltipRender: function(tooltip, record, item) {
+				tooltip.setHtml(record.get('complaint') + ': ' + record.get('count') + ' responses.');
+			},
 
-			if (filename) {
-				config.filename = filename;
-			}
+			onLineSeriesTooltipRender: function(tooltip, record, item) {
+				var store = record.store, i, complaints = [];
 
-			if (format === 'jpeg' && quality) {
-				config.jpeg = {
-					quality: quality
+				for (i = 0; i <= item.index; i++) {
+					complaints.push(store.getAt(i).get('complaint'));
 				}
-			}
-			else if (format === 'pdf' && pdf) {
-				if (pdf.unit) {
-					if (pdf.border) {
-						pdf.border = pdf.border + pdf.unit;
-					}
-					if (pdf.width) {
-						pdf.width = pdf.width + pdf.unit;
-					}
-					if (pdf.height) {
-						pdf.height = pdf.height + pdf.unit;
-					}
 
+				tooltip.setHtml('<div style="text-align: center; font-weight: bold">' + record.get('cumpercent') + '%</div>'
+						+ complaints.join('<br>'));
+			},
+
+			onPercentRender: function(value) {
+				return value + '%';
+			},
+
+			downloadChart: function(format) {
+				var vm = this.getViewModel();
+				var filename = vm.get('filename');
+				var quality = vm.get('quality');
+				var width = vm.get('width');
+				var height = vm.get('height');
+				var pdf = Ext.clone(vm.get('pdf'));
+				var config = Object.create(null);
+
+				if (format !== 'png') {
+					config.format = format;
+				}
+
+				if (width) {
+					config.width = width;
+				}
+
+				if (height) {
+					config.height = height;
+				}
+
+				if (filename) {
+					config.filename = filename;
+				}
+
+				if (format === 'jpeg' && quality) {
+					config.jpeg = {
+						quality: quality
+					}
+				}
+				else if (format === 'pdf' && pdf) {
+					if (pdf.unit) {
+						if (pdf.border) {
+							pdf.border = pdf.border + pdf.unit;
+						}
+						if (pdf.width) {
+							pdf.width = pdf.width + pdf.unit;
+						}
+						if (pdf.height) {
+							pdf.height = pdf.height + pdf.unit;
+						}
+					}
 					delete pdf.unit;
+
+					if (pdf.orientation) {
+						pdf.orientation = pdf.orientation.orientation;
+					}
+
+					config.pdf = pdf;
 				}
 
-				if (pdf.orientation) {
-					pdf.orientation = pdf.orientation.orientation;
-				}
+				console.log(config);
 
-				config.pdf = pdf;
+				this.lookup('chart').download(config);
 			}
-
-			console.log(config);
-
-			this.down('cartesian').download(config);
 		},
 
-		dockedItems: [ {
-			xtype: 'toolbar',
-			items: [ {
-				xtype: 'textfield',
-				fieldLabel: 'Filename',
-				labelWidth: 60,
-				width: 160,
-				bind: '{filename}'
-			}, {
-				xtype: 'numberfield',
-				fieldLabel: 'Width',
-				labelWidth: 40,
-				width: 110,
-				bind: '{width}'
-			}, {
-				xtype: 'numberfield',
-				fieldLabel: 'Height',
-				labelWidth: 40,
-				width: 110,
-				bind: '{height}'
-			}, '-', {
-				text: 'Download as PNG',
-				handler: function(btn) {
-					btn.up('panel').downloadChart('png');
-				}
-			}, '-', {
-				xtype: 'slider',
-				minValue: 0,
-				maxValue: 100,
-				bind: '{quality}',
-				fieldLabel: 'Quality',
-				labelWidth: 50,
-				publishOnComplete: false,
-				width: 200,
-				value: 100
-			}, {
-				xtype: 'displayfield',
-				bind: '{quality}',
-				width: 20
-			}, {
-				text: 'Download as JPEG',
-				handler: function(btn) {
-					btn.up('panel').downloadChart('jpeg');
-				}
-			}, '-', {
-				text: 'Download as GIF',
-				handler: function(btn) {
-					btn.up('panel').downloadChart('gif');
-				}
-			} ]
-		}, {
-
-			xtype: 'toolbar',
-			items: [ {
-				xtype: 'radiogroup',
-				fieldLabel: 'Orientation',
-				columns: 2,
-				labelWidth: 60,
-				vertical: false,
-				width: 230,
-				items: [ {
-					boxLabel: 'Portrait',
-					name: 'orientation',
-					inputValue: 'portrait'
-				}, {
-					boxLabel: 'Landscape',
-					name: 'orientation',
-					inputValue: 'landscape'
-				} ],
-				bind: {
-					value: '{pdf.orientation}'
-				}
-			}, '-', {
-				xtype: 'combobox',
-				fieldLabel: 'Format',
-				labelWidth: 50,
-				store: [ 'A3', 'A4', 'A5', 'Legal', 'Letter', 'Tabloid' ],
-				width: 150,
-				queryMode: 'local',
-				bind: '{pdf.format}'
-			}, '-', {
-				xtype: 'numberfield',
-				fieldLabel: 'Width',
-				labelWidth: 40,
-				width: 100,
-				bind: '{pdf.width}'
-			}, {
-				xtype: 'numberfield',
-				fieldLabel: 'Height',
-				labelWidth: 40,
-				width: 100,
-				bind: '{pdf.height}'
-			}, {
-				xtype: 'numberfield',
-				fieldLabel: 'Border',
-				labelWidth: 40,
-				width: 100,
-				bind: '{pdf.border}'
-			}, {
-				xtype: 'combobox',
-				fieldLabel: 'Unit',
-				labelWidth: 30,
-				store: [ 'px', 'mm', 'cm', 'in' ],
-				width: 100,
-				queryMode: 'local',
-				bind: '{pdf.unit}'
-			}, '-', {
-				text: 'Download as PDF',
-				handler: function(btn) {
-					btn.up('panel').downloadChart('pdf');
-				}
-			} ]
-
-		} ],
 
 		items: [ {
 			xtype: 'cartesian',
-			margin: '30 0 0 0',
 			defaultDownloadServerUrl: 'downloadchart',
-
-			width: '100%',
-			height: 500,
+			shadow: 'true',
+			reference: 'chart',
+			theme: 'category2',
 			store: myDataStore,
-			insetPadding: '40 40 20 40',
+			insetPadding: '20 20 5 20',
+			width: 800,
+			height: 600,
 			legend: {
-				docked: 'bottom'
+				type: 'sprite'
 			},
-			sprites: [ {
-				type: 'text',
-				text: 'Restaurant Complaints by Reported Cause',
-				fontSize: 22,
-				width: 100,
-				height: 30,
-				x: 40,
-				y: 20
-			}, {
-				type: 'text',
-				text: 'Data: Restaurant Complaints',
-				font: '10px Helvetica',
-				x: 12,
-				y: 650
-			} ],
 			axes: [ {
 				type: 'numeric',
 				position: 'left',
@@ -264,15 +179,14 @@ Ext.onReady(function() {
 				majorTickSteps: 10,
 				reconcileRange: true,
 				grid: true,
-				minimum: 0,
-				maximum: 1800
+				minimum: 0
 			}, {
 				type: 'category',
 				position: 'bottom',
 				fields: 'complaint',
 				label: {
 					rotate: {
-						degrees: -45
+						degrees: -60
 					}
 				}
 			}, {
@@ -281,10 +195,7 @@ Ext.onReady(function() {
 				fields: [ 'cumnumber' ],
 				reconcileRange: true,
 				majorTickSteps: 10,
-				renderer: function(v) {
-					var total = this.getAxis().getRange()[1];
-					return (v / total * 100).toFixed(0) + '%';
-				}
+				renderer: 'onAxisLabelRender'
 			} ],
 			series: [ {
 				type: 'bar',
@@ -300,10 +211,7 @@ Ext.onReady(function() {
 				},
 				tooltip: {
 					trackMouse: true,
-					style: 'background: #fff',
-					renderer: function(record, item) {
-						this.setHtml(record.get('complaint') + ': ' + record.get('count') + ' responses.');
-					}
+					renderer: 'onBarSeriesTooltipRender'
 				}
 			}, {
 				type: 'line',
@@ -316,26 +224,189 @@ Ext.onReady(function() {
 				},
 				marker: {
 					type: 'cross',
-					fx: {
+					animation: {
 						duration: 200
 					}
 				},
-				highlightCfg: {
+				highlight: {
 					scaling: 2,
 					rotationRads: Math.PI / 4
 				},
 				tooltip: {
 					trackMouse: true,
-					style: 'background: #fff',
-					renderer: function(record, item) {
-						var store = record.store, i, complaints = [];
-						for (i = 0; i <= item.index; i++) {
-							complaints.push(store.getAt(i).get('complaint'));
-						}
-						this.setHtml('<div style="text-align: center; font-weight: bold">' + record.get('cumpercent') + '%</div>' + complaints.join('<br>'));
-					}
+					renderer: 'onLineSeriesTooltipRender'
 				}
 			} ]
-		} ]
+		},  {
+			xtype: 'toolbar',
+			docked: 'top',
+
+	    	defaults: {
+	    		labelAlign: 'left'
+	    	},
+			items: [ {
+				xtype: 'textfield',
+				label: 'Filename',
+				width: 200,
+				labelWidth: 60,
+				bind: '{filename}'
+			}, {
+				xtype: 'numberfield',
+				label: 'Width',
+				bind: '{width}',
+				width: 100,
+				labelWidth: 45
+			}, {
+				xtype: 'numberfield',
+				label: 'Height',
+				bind: '{height}',
+				width: 100,
+				labelWidth: 50
+			},  {
+				text: 'Download as PNG',
+				handler: 'downloadPng'
+			},  {
+				xtype: 'slider',
+				minValue: 0,
+				maxValue: 100,
+				labelAlign: 'top',
+				bind: '{quality}',
+				label: 'Quality',
+				width: 200
+			}, {
+				xtype: 'displayfield',
+				bind: 'Quality: {quality}',
+				width: 100
+			}, {
+				text: 'Download as JPEG',
+				handler: 'donwloadJpeg'
+			},  {
+				text: 'Download as GIF',
+				handler: 'downloadGif'
+			} ]
+		}, {
+			xtype: 'toolbar',
+			docked: 'top',
+
+	    	defaults: {
+	    		labelAlign: 'left'
+	    	},	        
+			items: [ {
+				xtype: 'fieldpanel',
+				items: [ {
+					 xtype: 'radiofield',
+					 label: 'Portrait',
+					name: 'orientation',
+					value: 'portrait',
+		        	viewModel: {
+		    			formulas: {
+		    				checked: {
+		    					bind: '{pdf.orientation}',
+		    					get: (value) => value === 'portrait',    				
+		    					set: function(value) {
+		    						this.set('pdf.orientation', value ? 'portrait' : 'landscape');
+		    					}
+		    				}
+		    			}
+		    		},
+		    		bind: {
+		    			checked: '{checked}'
+		    		}					
+				}, {
+					 xtype: 'radiofield',
+					 label: 'Landscape',
+					name: 'orientation',
+					value: 'landscape',
+		        	viewModel: {
+		    			formulas: {
+		    				checked: {
+		    					bind: '{pdf.orientation}',
+		    					get: (value) => value === 'landscape',    				
+		    					set: function(value) {
+		    						this.set('pdf.orientation', value ? 'landscape' : 'portrait');
+		    					}
+		    				}
+		    			}
+		    		},
+		    		bind: {
+		    			checked: '{checked}'
+		    		}			
+				} ]
+			}, {
+				xtype: 'combobox',
+				label: 'Format',		
+				store: {
+					fields: [ 'value', 'text' ],
+					data: [ {
+						value: 'A3',
+						text: 'A3'
+					}, {
+						value: 'A4',
+						text: 'A4'
+					}, {
+						value: 'A5',
+						text: 'A5'
+					}, {
+						value: 'Legal',
+						text: 'Legal'
+					}, {
+						value: 'Letter',
+						text: 'Letter'
+					}, {
+						value: 'Tabloid',
+						text: 'Tabloid'
+					} ]
+				},
+				queryMode: 'local',
+				bind: '{pdf.format}',
+				width: 150,
+				labelWidth: 50
+			},  {
+				xtype: 'numberfield',
+				label: 'Width',
+				bind: '{pdf.width}',
+				width: 100,
+				labelWidth: 45
+			}, {
+				xtype: 'numberfield',
+				label: 'Height',
+				bind: '{pdf.height}',
+				width: 100,
+				labelWidth: 50
+			}, {
+				xtype: 'numberfield',
+				label: 'Border',
+				bind: '{pdf.border}',
+				width: 100,
+				labelWidth: 50
+			}, {
+				xtype: 'combobox',
+				label: 'Unit',
+				store: {
+					fields: [ 'value', 'text' ],
+					data: [ {
+						value: 'px',
+						text: 'px'
+					}, {
+						value: 'mm',
+						text: 'mm'
+					}, {
+						value: 'cm',
+						text: 'cm'
+					}, {
+						value: 'in',
+						text: 'in'
+					} ]
+				},				
+				queryMode: 'local',
+				bind: '{pdf.unit}',
+				width: 150,
+				labelWidth: 50
+			},  {
+				text: 'Download as PDF',
+				handler: 'downloadPdf'
+			} ]
+
+		}  ]
 	});
 });
