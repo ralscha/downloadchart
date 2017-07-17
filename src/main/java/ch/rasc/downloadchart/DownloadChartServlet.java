@@ -37,12 +37,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.pdfbox.exceptions.COSVisitorException;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
-import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.graphics.xobject.PDPixelMap;
+import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
+import org.apache.pdfbox.util.Matrix;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -208,16 +208,16 @@ public class DownloadChartServlet extends HttpServlet {
 				"attachment; filename=\"" + filename + ".pdf\";");
 
 		try (PDDocument document = new PDDocument()) {
-			PDRectangle format = PDPage.PAGE_SIZE_A4;
+			PDRectangle format = PDRectangle.A4;
 			if (options != null) {
 				if ("A3".equals(options.format)) {
-					format = PDPage.PAGE_SIZE_A3;
+					format = PDRectangle.A3;
 				}
 				else if ("A5".equals(options.format)) {
-					format = PDPage.PAGE_SIZE_A5;
+					format = PDRectangle.A5;
 				}
 				else if ("Letter".equals(options.format)) {
-					format = PDPage.PAGE_SIZE_LETTER;
+					format = PDRectangle.LETTER;
 				}
 				else if ("Legal".equals(options.format)) {
 					format = new PDRectangle(215.9f * MM_TO_UNITS, 355.6f * MM_TO_UNITS);
@@ -248,7 +248,8 @@ public class DownloadChartServlet extends HttpServlet {
 			try (PDPageContentStream contentStream = new PDPageContentStream(document,
 					page)) {
 
-				PDPixelMap ximage = new PDPixelMap(document, originalImage);
+				PDImageXObject ximage = PDImageXObject.createFromByteArray(document,
+						imageData, filename);
 
 				Dimension newDimension = calculateDimension(originalImage, width, height);
 				int imgWidth = ximage.getWidth();
@@ -265,7 +266,7 @@ public class DownloadChartServlet extends HttpServlet {
 
 				AffineTransform transform;
 
-				if (page.getRotation() == null) {
+				if (page.getRotation() == 0) {
 					float scale = (page.getMediaBox().getWidth() - border * 2) / imgWidth;
 					if (scale < 1.0) {
 						transform = new AffineTransform(imgWidth, 0, 0, imgHeight, border,
@@ -297,16 +298,11 @@ public class DownloadChartServlet extends HttpServlet {
 					transform.rotate(1.0 * Math.PI / 2.0);
 				}
 
-				contentStream.drawXObject(ximage, transform);
-
+				contentStream.drawImage(ximage, new Matrix(transform));
 			}
 
-			try {
-				document.save(response.getOutputStream());
-			}
-			catch (COSVisitorException e) {
-				throw new IOException(e);
-			}
+			document.save(response.getOutputStream());
+
 		}
 	}
 

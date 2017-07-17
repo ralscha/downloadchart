@@ -52,13 +52,7 @@
 		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
-			<version>1.8.11</version>
-			<exclusions>
-				<exclusion>
-					<artifactId>commons-logging</artifactId>
-					<groupId>commons-logging</groupId>
-				</exclusion>
-			</exclusions>
+			<version>2.0.6</version>
 		</dependency>
 
 	</dependencies>
@@ -75,7 +69,7 @@
 			<plugin>
 				<groupId>com.spotify</groupId>
 				<artifactId>docker-maven-plugin</artifactId>
-				<version>0.4.13</version>
+				<version>1.0.0</version>
 				<configuration>
 					<imageName>downloadchart</imageName>
 					<baseImage>develar/java</baseImage>
