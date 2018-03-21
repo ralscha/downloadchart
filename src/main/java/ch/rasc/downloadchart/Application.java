@@ -20,7 +20,7 @@ import java.util.Collections;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
-import org.springframework.boot.web.support.SpringBootServletInitializer;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
@@ -36,8 +36,8 @@ public class Application extends SpringBootServletInitializer {
 	}
 
 	@Bean
-	public ServletRegistrationBean downloadChartServletRegistration() {
-		ServletRegistrationBean reg = new ServletRegistrationBean();
+	public ServletRegistrationBean<DownloadChartServlet> downloadChartServletRegistration() {
+		ServletRegistrationBean<DownloadChartServlet> reg = new ServletRegistrationBean<>();
 		reg.setUrlMappings(Collections.singleton("/downloadchart"));
 		reg.setServlet(new DownloadChartServlet());
 		return reg;
