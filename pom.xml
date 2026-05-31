@@ -1,131 +1,173 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>ch.rasc</groupId>
-	<artifactId>downloadchart</artifactId>
-	<version>1.0.2</version>
-	<packaging>jar</packaging>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
 
-	<licenses>
-		<license>
-			<name>Apache 2</name>
-			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-			<distribution>repo</distribution>
-		</license>
-	</licenses>
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>2.7.15</version>
+  </parent>
+  <groupId>ch.rasc</groupId>
+  <artifactId>downloadchart</artifactId>
+  <version>1.0.2</version>
+  <packaging>jar</packaging>
 
-	<developers>
-		<developer>
-			<name>Ralph Schaer</name>
-			<email>ralphschaer@gmail.com</email>
-		</developer>
-	</developers>
+  <inceptionYear>2014</inceptionYear>
 
-	<inceptionYear>2014</inceptionYear>
+  <licenses>
+    <license>
+      <name>Apache 2</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
 
+  <developers>
+    <developer>
+      <name>Ralph Schaer</name>
+      <email>ralphschaer@gmail.com</email>
+    </developer>
+  </developers>
 
-	<parent>
-		<groupId>org.springframework.boot</groupId>
-		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.7.15</version>
-	</parent>
+  <properties>
+    <java.version>25</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.debug>true</maven.compiler.debug>
+  </properties>
 
-	<properties>
-		<java.version>25</java.version>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.debug>true</maven.compiler.debug>
-	</properties>
+  <dependencies>
 
-	<dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
-		</dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-tomcat</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-tomcat</artifactId>
-			<scope>provided</scope>
-		</dependency>
+    <dependency>
+      <groupId>org.apache.pdfbox</groupId>
+      <artifactId>pdfbox</artifactId>
+      <version>2.0.25</version>
+    </dependency>
 
-		<dependency>
-			<groupId>org.apache.pdfbox</groupId>
-			<artifactId>pdfbox</artifactId>
-			<version>2.0.25</version>
-		</dependency>
+  </dependencies>
 
-	</dependencies>
+  <build>
+    <finalName>downloadchart</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <configuration>
+          <executable>true</executable>
+        </configuration>
+      </plugin>
 
-
-	<build>
-		<finalName>downloadchart</finalName>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<executable>true</executable>
-				</configuration>				
-			</plugin>
-
-			<plugin>
-				<groupId>com.spotify</groupId>
-				<artifactId>docker-maven-plugin</artifactId>
-				<version>1.2.2</version>
-				<configuration>
-					<imageName>downloadchart</imageName>
-					<baseImage>develar/java</baseImage>
-					<entryPoint>["java","-Dlogging.file=app.log", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/${project.build.finalName}.jar"]</entryPoint>			
-					<!-- copy the service's jar file from target into the root directory 
+      <plugin>
+        <groupId>com.spotify</groupId>
+        <artifactId>docker-maven-plugin</artifactId>
+        <version>1.2.2</version>
+        <configuration>
+          <imageName>downloadchart</imageName>
+          <baseImage>develar/java</baseImage>
+          <entryPoint>["java","-Dlogging.file=app.log", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
+          <!-- copy the service's jar file from target into the root directory 
 						of the image -->
-					<resources>
-						<resource>
-							<targetPath>/</targetPath>
-							<directory>${project.build.directory}</directory>
-							<include>${project.build.finalName}.jar</include>
-						</resource>
-					</resources>
-					<workdir>/app</workdir>
-					<volumes>/app</volumes>
-				</configuration>
-			</plugin>
+          <resources>
+            <resource>
+              <targetPath>/</targetPath>
+              <directory>${project.build.directory}</directory>
+              <include>${project.build.finalName}.jar</include>
+            </resource>
+          </resources>
+          <workdir>/app</workdir>
+          <volumes>/app</volumes>
+        </configuration>
+      </plugin>
 
-			<plugin>
-				<groupId>com.mycila</groupId>
-				<artifactId>license-maven-plugin</artifactId>
-				<version>4.6</version>
-				<configuration>
-					<header>${basedir}/src/main/config/header.txt</header>
-					<properties>
-						
-						<year>${project.inceptionYear}</year>
-						<currentYear>2018</currentYear>
-						
-					</properties>
-					<excludes>
-						<exclude>**/*.js</exclude>
-						<exclude>**/*.html</exclude>
-						<exclude>**/*.md</exclude>
-						<exclude>**/*.xml</exclude>
-						<exclude>**/LICENSE</exclude>
-						<exclude>.mvn/**/*</exclude>
-						<exclude>mvnw.cmd</exclude>
-						<exclude>mvnw</exclude>
-					</excludes>
-					<strictCheck>true</strictCheck>
-				</configuration>
-				<executions>
-					<execution>
-						<id>check-headers</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+      <plugin>
+        <groupId>com.mycila</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>4.6</version>
+        <configuration>
+          <header>${basedir}/src/main/config/header.txt</header>
+          <properties>
+
+            <year>${project.inceptionYear}</year>
+            <currentYear>2018</currentYear>
+
+          </properties>
+          <excludes>
+            <exclude>**/*.js</exclude>
+            <exclude>**/*.html</exclude>
+            <exclude>**/*.md</exclude>
+            <exclude>**/*.xml</exclude>
+            <exclude>**/LICENSE</exclude>
+            <exclude>.mvn/**/*</exclude>
+            <exclude>mvnw.cmd</exclude>
+            <exclude>mvnw</exclude>
+          </excludes>
+          <strictCheck>true</strictCheck>
+        </configuration>
+        <executions>
+          <execution>
+            <id>check-headers</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>verify</phase>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.15.0</version>
+        <configuration>
+          <fork>true</fork>
+          <compilerArgs>
+            <arg>-XDcompilePolicy=simple</arg>
+            <arg>--should-stop=ifError=FLOW</arg>
+            <arg>-Xplugin:ErrorProne</arg>
+            <arg>-XDaddTypeAnnotationsToSymbol=true</arg>
+            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</arg>
+            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED</arg>
+            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED</arg>
+            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+            <arg>-J--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+            <arg>-J--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED</arg>
+          </compilerArgs>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>com.google.errorprone</groupId>
+              <artifactId>error_prone_core</artifactId>
+              <version>2.49.0</version>
+            </path>
+          </annotationProcessorPaths>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>com.github.ekryd.sortpom</groupId>
+        <artifactId>sortpom-maven-plugin</artifactId>
+        <version>4.0.0</version>
+        <configuration>
+          <createBackupFile>false</createBackupFile>
+          <nrOfIndentSpace>2</nrOfIndentSpace>
+          <sortProperties>false</sortProperties>
+        </configuration>
+      </plugin>
+
+    </plugins>
+  </build>
 
 </project>
