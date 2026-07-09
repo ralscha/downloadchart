@@ -32,10 +32,10 @@ import javax.imageio.ImageIO;
 import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -44,9 +44,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
 import org.apache.pdfbox.util.Matrix;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 public class DownloadChartServlet extends HttpServlet {
 
@@ -116,7 +114,7 @@ public class DownloadChartServlet extends HttpServlet {
 	}
 
 	private static <T> T readOptions(HttpServletRequest request, String requestParameter,
-			Class<T> clazz) throws IOException, JsonParseException, JsonMappingException {
+			Class<T> clazz) throws IOException {
 
 		String optionsString = request.getParameter(requestParameter);
 		if (optionsString != null) {
@@ -157,9 +155,6 @@ public class DownloadChartServlet extends HttpServlet {
 				BufferedImage.TYPE_INT_RGB);
 
 		Graphics2D g = newImage.createGraphics();
-		g.drawImage(image, 0, 0, imgWidth, imgHeight, Color.BLACK, null);
-		g.dispose();
-
 		if (newDimension != null) {
 			g.setComposite(AlphaComposite.Src);
 			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
@@ -169,6 +164,8 @@ public class DownloadChartServlet extends HttpServlet {
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 					RenderingHints.VALUE_ANTIALIAS_ON);
 		}
+		g.drawImage(image, 0, 0, imgWidth, imgHeight, Color.BLACK, null);
+		g.dispose();
 
 		try (ImageOutputStream ios = ImageIO
 				.createImageOutputStream(response.getOutputStream())) {
@@ -318,9 +315,6 @@ public class DownloadChartServlet extends HttpServlet {
 			BufferedImage resizedImage = new BufferedImage(newDimension.width,
 					newDimension.height, type);
 			Graphics2D g = resizedImage.createGraphics();
-			g.drawImage(originalImage, 0, 0, newDimension.width, newDimension.height,
-					null);
-			g.dispose();
 			g.setComposite(AlphaComposite.Src);
 
 			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
@@ -329,6 +323,9 @@ public class DownloadChartServlet extends HttpServlet {
 					RenderingHints.VALUE_RENDER_QUALITY);
 			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
 					RenderingHints.VALUE_ANTIALIAS_ON);
+			g.drawImage(originalImage, 0, 0, newDimension.width, newDimension.height,
+					null);
+			g.dispose();
 
 			ImageIO.write(resizedImage, formatName, response.getOutputStream());
 		}
