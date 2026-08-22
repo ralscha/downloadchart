@@ -5,7 +5,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>4.1.0</version>
+    <version>4.1.1</version>
   </parent>
   <groupId>ch.rasc</groupId>
   <artifactId>downloadchart</artifactId>
@@ -79,7 +79,7 @@
         <configuration>
           <imageName>downloadchart</imageName>
           <baseImage>develar/java</baseImage>
-          <entryPoint>["java","-Dlogging.file=app.log", "-Djava.security.egd=file:/dev/./urandom", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
+          <entryPoint>[&quot;java&quot;,&quot;-Dlogging.file=app.log&quot;, &quot;-Djava.security.egd=file:/dev/./urandom&quot;, &quot;-jar&quot;, &quot;/${project.build.finalName}.jar&quot;]</entryPoint>
           <!-- copy the service's jar file from target into the root directory 
 						of the image -->
           <resources>
