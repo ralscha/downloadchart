@@ -14,20 +14,9 @@
 # limitations under the License.
 #
 
-FROM debian:wheezy
-
-RUN \
-  echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu precise main" | tee -a /etc/apt/sources.list && \
-  echo "deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu precise main" | tee -a /etc/apt/sources.list && \
-  apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886 && \
-  apt-get update
-
-RUN \
-  echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-  apt-get install -y oracle-java8-installer &&\
-  apt-get clean
-
-RUN wget --no-check-certificate https://github.com/ralscha/downloadchart/releases/download/1.0.1/downloadchart-1.0.1.war
-CMD ["/usr/bin/java", "-jar", "/downloadchart-1.0.1.war"]
-
+FROM eclipse-temurin:25-jre-noble
+WORKDIR /app
+COPY target/downloadchart.jar app.jar
+USER 10001:10001
 EXPOSE 8080
+ENTRYPOINT ["java", "-Djava.awt.headless=true", "-jar", "/app/app.jar"]

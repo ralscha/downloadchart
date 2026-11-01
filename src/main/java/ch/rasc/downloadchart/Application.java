@@ -15,31 +15,20 @@
  */
 package ch.rasc.downloadchart;
 
-import java.util.Set;
-
+import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
-import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
-public class Application extends SpringBootServletInitializer {
-
-	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-		return application.sources(Application.class);
-	}
+public class Application {
 
 	public static void main(String[] args) {
-		new SpringApplicationBuilder(Application.class).run(args);
+		SpringApplication.run(Application.class, args);
 	}
 
 	@Bean
 	public ServletRegistrationBean<DownloadChartServlet> downloadChartServletRegistration() {
-		ServletRegistrationBean<DownloadChartServlet> reg = new ServletRegistrationBean<>();
-		reg.setUrlMappings(Set.of("/downloadchart"));
-		reg.setServlet(new DownloadChartServlet());
-		return reg;
+		return new ServletRegistrationBean<>(new DownloadChartServlet(), "/downloadchart");
 	}
 }

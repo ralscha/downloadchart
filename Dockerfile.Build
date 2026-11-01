@@ -1,36 +1,30 @@
-FROM debian:wheezy
+#
+# Copyright the original author or authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#   http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
-RUN \
-  echo "deb http://ppa.launchpad.net/webupd8team/java/ubuntu precise main" | tee -a /etc/apt/sources.list && \
-  echo "deb-src http://ppa.launchpad.net/webupd8team/java/ubuntu precise main" | tee -a /etc/apt/sources.list && \
-  apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys EEA14886 && \
-  apt-get update
+FROM eclipse-temurin:25-jdk-noble AS build
+WORKDIR /build
+COPY .mvn .mvn
+COPY mvnw pom.xml ./
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw
+COPY src src
+RUN ./mvnw -B -ntp verify
 
-RUN \
-  echo debconf shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-  apt-get install -y oracle-java8-installer &&\
-  apt-get clean
-
-
-
-RUN apt-get -y install git
-
-
-RUN mkdir /build
-RUN wget -P /build/ http://mirrors.gigenet.com/apache/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz
-RUN tar xzf /build/apache-maven-3.3.3-bin.tar.gz -C build
-
-RUN cd build && git clone https://github.com/ralscha/downloadchart.git
-RUN cd /build/downloadchart && /build/apache-maven-3.3.3/bin/mvn package
-
-RUN cp /build/downloadchart/target/downloadchart-1.0.1.war /
-RUN rm -rf /build
-RUN rm -rf /root/.m2
-
-RUN apt-get purge -y git
-RUN apt-get clean autoclean && apt-get -y autoremove
-RUN rm -rf /var/lib/{apt,dpkg,cache,log}/ /tmp/* /var/tmp/*
-
-CMD ["/usr/bin/java", "-jar", "/downloadchart-1.0.1.war"]
-
+FROM eclipse-temurin:25-jre-noble
+WORKDIR /app
+COPY --from=build /build/target/downloadchart.jar app.jar
+USER 10001:10001
 EXPOSE 8080
+ENTRYPOINT ["java", "-Djava.awt.headless=true", "-jar", "/app/app.jar"]

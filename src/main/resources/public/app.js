@@ -56,7 +56,11 @@ Ext.onReady(function() {
 		layout: 'fit',
 		title: 'Download Chart Example',
 		viewModel: {
-
+			data: {
+				quality: 100,
+				scale: 1,
+				pdf: { orientation: 'portrait', format: 'A4', unit: 'mm', border: 0 }
+			}
 		},
 
 		controller: {
@@ -68,7 +72,7 @@ Ext.onReady(function() {
 				this.downloadChart('pdf');
 			},
 			
-			donwloadJpeg: function() {
+			downloadJpeg: function() {
 				this.downloadChart('jpeg');
 			},
 			
@@ -107,6 +111,7 @@ Ext.onReady(function() {
 				var quality = vm.get('quality');
 				var width = vm.get('width');
 				var height = vm.get('height');
+				var scale = vm.get('scale');
 				var pdf = Ext.clone(vm.get('pdf'));
 				var config = Object.create(null);
 
@@ -121,38 +126,32 @@ Ext.onReady(function() {
 				if (height) {
 					config.height = height;
 				}
+				if (scale) {
+					config.scale = scale;
+				}
 
 				if (filename) {
 					config.filename = filename;
 				}
 
-				if (format === 'jpeg' && quality) {
+				if (format === 'jpeg' && quality !== null && quality !== undefined) {
 					config.jpeg = {
 						quality: quality
-					}
+					};
 				}
 				else if (format === 'pdf' && pdf) {
-					if (pdf.unit) {
-						if (pdf.border) {
-							pdf.border = pdf.border + pdf.unit;
+					['border', 'width', 'height'].forEach(function(name) {
+						if (pdf[name] === null || pdf[name] === undefined || pdf[name] === '') {
+							delete pdf[name];
 						}
-						if (pdf.width) {
-							pdf.width = pdf.width + pdf.unit;
+						else {
+							pdf[name] = String(pdf[name]) + (pdf.unit || 'px');
 						}
-						if (pdf.height) {
-							pdf.height = pdf.height + pdf.unit;
-						}
-					}
+					});
 					delete pdf.unit;
-
-					if (pdf.orientation) {
-						pdf.orientation = pdf.orientation.orientation;
-					}
 
 					config.pdf = pdf;
 				}
-
-				console.log(config);
 
 				this.lookup('chart').download(config);
 			}
@@ -162,7 +161,7 @@ Ext.onReady(function() {
 		items: [ {
 			xtype: 'cartesian',
 			defaultDownloadServerUrl: 'downloadchart',
-			shadow: 'true',
+			shadow: true,
 			reference: 'chart',
 			theme: 'category2',
 			store: myDataStore,
@@ -254,12 +253,18 @@ Ext.onReady(function() {
 				xtype: 'numberfield',
 				label: 'Width',
 				bind: '{width}',
+				minValue: 1,
+				maxValue: 8192,
+				decimals: 0,
 				width: 100,
 				labelWidth: 45
 			}, {
 				xtype: 'numberfield',
 				label: 'Height',
 				bind: '{height}',
+				minValue: 1,
+				maxValue: 8192,
+				decimals: 0,
 				width: 100,
 				labelWidth: 50
 			},  {
@@ -279,10 +284,19 @@ Ext.onReady(function() {
 				width: 100
 			}, {
 				text: 'Download as JPEG',
-				handler: 'donwloadJpeg'
+				handler: 'downloadJpeg'
 			},  {
 				text: 'Download as GIF',
 				handler: 'downloadGif'
+			}, {
+				xtype: 'numberfield',
+				label: 'Scale',
+				bind: '{scale}',
+				minValue: 0.1,
+				maxValue: 16,
+				stepValue: 0.5,
+				width: 120,
+				labelWidth: 45
 			} ]
 		}, {
 			xtype: 'toolbar',
@@ -365,18 +379,21 @@ Ext.onReady(function() {
 				xtype: 'numberfield',
 				label: 'Width',
 				bind: '{pdf.width}',
+				minValue: 0.1,
 				width: 100,
 				labelWidth: 45
 			}, {
 				xtype: 'numberfield',
 				label: 'Height',
 				bind: '{pdf.height}',
+				minValue: 0.1,
 				width: 100,
 				labelWidth: 50
 			}, {
 				xtype: 'numberfield',
 				label: 'Border',
 				bind: '{pdf.border}',
+				minValue: 0,
 				width: 100,
 				labelWidth: 50
 			}, {
